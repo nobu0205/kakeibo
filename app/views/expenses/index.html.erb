@@ -1,0 +1,54 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Expenses" %>
+
+<h1>Expenses</h1>
+
+<!-- 👇これ追加 -->
+<p>合計: <%= @total_amount %> 円</p>
+
+<p><%= @category_totals.inspect %></p>
+
+<h2>カテゴリ別グラフ</h2>
+
+<canvas id="categoryChart"></canvas>
+
+<div id="expenses">
+  <% @expenses.each do |expense| %>
+    <%= render expense %>
+    <p>
+      <%= link_to "Show this expense", expense %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New expense", new_expense_path %>
+
+<script>
+  function drawChart() {
+    const ctx = document.getElementById('categoryChart');
+    if (!ctx) return;
+
+    // 👇 ここ修正（これ重要）
+    if (window.categoryChart && typeof window.categoryChart.destroy === "function") {
+      window.categoryChart.destroy();
+    }
+
+    const data = {
+      labels: <%= raw @category_totals.keys.to_json %>,
+      datasets: [{
+        label: '支出',
+        data: <%= raw @category_totals.values.to_json %>,
+        backgroundColor: ['#FF6384','#36A2EB','#FFCE56']
+      }]
+    };
+
+    window.categoryChart = new Chart(ctx, {
+      type: 'pie',
+      data: data
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", drawChart);
+  document.addEventListener("turbo:load", drawChart);
+</script>
