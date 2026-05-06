@@ -1,12 +1,15 @@
 class ExpensesController < ApplicationController
   before_action :set_expense, only: %i[ show edit update destroy ]
 
-  # GET /expenses or /expenses.json
-  def index
-    @expenses = Expense.all
-    @total_amount = @expenses.sum(:amount)
-    @category_totals = @expenses.group(:category).sum(:amount)
-  end
+ # GET /expenses or /expenses.json
+ def index
+  @expenses = Expense.order(date: :desc)
+  @expenses = @expenses.where(category: params[:category]) if params[:category].present?
+
+  @total_amount = @expenses.sum(:amount)
+  @category_totals = @expenses.group(:category).sum(:amount)
+  @monthly_totals = @expenses.group_by_month(:date).sum(:amount)
+end
 
   # GET /expenses/1 or /expenses/1.json
   def show
