@@ -1,14 +1,51 @@
 class ExpensesController < ApplicationController
   before_action :set_expense, only: %i[ show edit update destroy ]
 
- # GET /expenses or /expenses.json
- def index
-  @expenses = Expense.order(date: :desc)
-  @expenses = @expenses.where(category: params[:category]) if params[:category].present?
+# GET /expenses or /expenses.json
+def index
+  # 月選択
+  if params[:month].present?
+    @selected_month = Date.parse(params[:month] + "-01")
+  else
+    @selected_month = Date.current
+  end
 
+  # 対象月のデータ
+  @expenses = Expense.where(
+    date: @selected_month.beginning_of_month..
+          @selected_month.end_of_month
+  ).order(date: :desc)
+
+  # キーワード検索
+  if params[:keyword].present?
+    @expenses = @expenses.where(
+      "title LIKE ?",
+      "%#{params[:keyword]}%"
+    )
+  end
+
+  # カテゴリ絞り込み
+  if params[:category].present?
+    @expenses = @expenses.where(category: params[:category])
+  end
+
+  # 合計
   @total_amount = @expenses.sum(:amount)
+
+  # カテゴリ別
   @category_totals = @expenses.group(:category).sum(:amount)
+
+  # 月別
   @monthly_totals = @expenses.group_by_month(:date).sum(:amount)
+
+  # 今月データ
+  @this_month_expenses = @expenses
+
+  @month_total = @this_month_expenses.sum(:amount)
+
+  @month_count = @this_month_expenses.count
+
+  @max_expense = @this_month_expenses.maximum(:amount) || 0
 end
 
   # GET /expenses/1 or /expenses/1.json

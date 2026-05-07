@@ -55,26 +55,27 @@
       </div>
     </div>
 
-    <!-- 日付 -->
-    <div>
-      <%= form.label :date, "日付", class: "block font-medium mb-1" %>
-      <%= form.date_field :date, class: "w-full border rounded p-2" %>
+  <!-- 日付 -->
+<div>
+  <%= form.label :date, "日付", class: "block font-medium mb-1" %>
+  <%= form.date_field :date,
+  value: expense.date || Date.today,
+  class: "w-full border rounded p-2" %>
 
+  <div class="flex gap-2 mt-2">
+    <button type="button"
+      onclick="setToday()"
+      class="bg-gray-200 px-3 py-1 rounded">
+      今日
+    </button>
 
-    <div class="flex gap-2 mt-2">
-  <button type="button"
-    onclick="setToday()"
-    class="bg-gray-200 px-3 py-1 rounded">
-    今日
-  </button>
-
-  <button type="button"
-    onclick="setYesterday()"
-    class="bg-gray-200 px-3 py-1 rounded">
-    昨日
-  </button>
+    <button type="button"
+      onclick="setYesterday()"
+      class="bg-gray-200 px-3 py-1 rounded">
+      昨日
+    </button>
+  </div>
 </div>
-    </div>
 
     <!-- 送信 -->
     <div>

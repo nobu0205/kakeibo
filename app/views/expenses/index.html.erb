@@ -1,6 +1,40 @@
 <h1 class="text-3xl font-bold mb-6">家計簿</h1>
 
-<form method="get" class="mb-6 flex items-center gap-2">
+<div class="flex items-center justify-center gap-4 mb-6">
+
+  <%= link_to "←",
+    expenses_path(
+      month: @selected_month.prev_month.strftime("%Y-%m"),
+      category: params[:category],
+      keyword: params[:keyword]
+    ),
+    class: "bg-white px-3 py-1 rounded shadow hover:bg-gray-100" %>
+
+  <h2 class="text-xl font-bold">
+    <%= @selected_month.strftime("%Y年%m月") %>
+  </h2>
+
+  <%= link_to "→",
+    expenses_path(
+      month: @selected_month.next_month.strftime("%Y-%m"),
+      category: params[:category],
+      keyword: params[:keyword]
+    ),
+    class: "bg-white px-3 py-1 rounded shadow hover:bg-gray-100" %>
+
+</div>
+
+<form method="get" class="mb-6 flex flex-col md:flex-row gap-2 bg-white p-4 rounded-xl shadow">
+<input type="hidden" name="month"
+  value="<%= @selected_month.strftime("%Y-%m") %>">
+
+  <input
+  type="text"
+  name="keyword"
+  value="<%= params[:keyword] %>"
+  placeholder="タイトル検索"
+  class="border rounded p-2 flex-1"
+/>
 
   <select name="category" class="border rounded p-2">
     <option value="">すべて</option>
@@ -11,7 +45,7 @@
   </select>
 
   <button type="submit"
-    class="bg-gray-800 text-white px-3 py-2 rounded">
+    class="bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-700">
     絞り込み
   </button>
 
@@ -22,11 +56,50 @@
 </form>
 
 <p class="text-xl mb-6">
+  
   合計:
   <span class="font-semibold">
     <%= number_to_currency(@total_amount, unit: "", delimiter: ",") %>
-  </span> 円
+  </span>
+  円
 </p>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+  <!-- 今月合計 -->
+  <div class="bg-white rounded-xl shadow p-4">
+    <p class="text-sm text-gray-500 mb-1">
+      今月の支出
+    </p>
+
+    <p class="text-2xl font-bold text-blue-600">
+      <%= number_to_currency(@month_total, unit: "", delimiter: ",") %> 円
+    </p>
+  </div>
+
+  <!-- 件数 -->
+  <div class="bg-white rounded-xl shadow p-4">
+    <p class="text-sm text-gray-500 mb-1">
+      今月の登録数
+    </p>
+
+    <p class="text-2xl font-bold text-green-600">
+      <%= @month_count %> 件
+    </p>
+  </div>
+
+  <!-- 最大支出 -->
+  <div class="bg-white rounded-xl shadow p-4">
+    <p class="text-sm text-gray-500 mb-1">
+      最大支出
+    </p>
+
+    <p class="text-2xl font-bold text-red-500">
+      <%= number_to_currency(@max_expense, unit: "", delimiter: ",") %> 円
+    </p>
+  </div>
+
+</div>
 
 <!-- グラフエリア -->
 <div class="grid md:grid-cols-2 gap-6 mb-6">
@@ -47,38 +120,106 @@
 
 <!-- 新規ボタン -->
 <%= link_to "＋ 支出を追加", new_expense_path,
-  class: "inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-6" %>
+  class: "inline-block bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600 mb-6" %>
 
 <!-- 一覧 -->
-<div class="space-y-4">
-  <% @expenses.each do |expense| %>
-    <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center">
-      <div>
-        <p class="font-semibold"><%= expense.title %></p>
-        <p class="text-sm text-gray-500">
-          <%= expense.category %> / <%= expense.date %>
-        </p>
+<% if @expenses.any? %>
+
+  <div class="space-y-4">
+    <% @expenses.each do |expense| %>
+
+      <div class="bg-white p-4 rounded-xl shadow
+            flex flex-col sm:flex-row
+            sm:justify-between sm:items-center
+            gap-3">
+
+        <!-- 左側 -->
+        <div>
+          <p class="font-semibold">
+            <%= expense.title %>
+          </p>
+
+          <p class="text-sm mt-1">
+
+            <span class="
+              px-2 py-1 rounded text-white text-xs
+              <%= case expense.category
+                  when '食費' then 'bg-green-500'
+                  when '交通費' then 'bg-blue-500'
+                  when '娯楽' then 'bg-purple-500'
+                  else 'bg-gray-500'
+                  end %>
+            ">
+              <%= expense.category %>
+            </span>
+
+            <span class="text-gray-500 ml-2">
+              <%= expense.date %>
+            </span>
+
+          </p>
+        </div>
+
+        <!-- 右側 -->
+        <div class="sm:text-right">
+
+          <p class="font-bold text-lg">
+            <%= number_to_currency(expense.amount, unit: "", delimiter: ",") %> 円
+          </p>
+
+          <div class="mt-1">
+            <%= link_to "詳細",
+              expense,
+              class: "text-blue-500 text-sm hover:underline" %>
+
+            <%= link_to "削除",
+              expense,
+              data: {
+                turbo_method: :delete,
+                turbo_confirm: "削除しますか？"
+              },
+              class: "text-red-500 text-sm ml-2 hover:underline" %>
+          </div>
+
+        </div>
+
       </div>
 
-      <div class="text-right">
-        <p class="font-bold text-lg">
-  <%= number_to_currency(expense.amount, unit: "", delimiter: ",") %> 円
-</p>
-        <%= link_to "詳細", expense, class: "text-blue-500 text-sm" %>
-        <%= link_to "削除", expense,
-        data: { turbo_method: :delete, turbo_confirm: "削除しますか？" },
-        class: "text-red-500 text-sm ml-2" %>
-      </div>
-    </div>
-  <% end %>
-</div>
+    <% end %>
+  </div>
+
+<% else %>
+
+  <!-- 空状態 -->
+  <div class="bg-white rounded-xl shadow p-10 text-center">
+
+    <p class="text-5xl mb-4">
+      💰
+    </p>
+
+    <h2 class="text-xl font-semibold mb-2">
+      まだ支出がありません
+    </h2>
+
+    <p class="text-gray-500 mb-6">
+      最初の支出を登録してみましょう
+    </p>
+
+    <%= link_to "＋ 支出を追加",
+      new_expense_path,
+      class: "inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" %>
+
+  </div>
+
+<% end %>
 
 <script>
   function drawChart() {
     const ctx = document.getElementById('categoryChart');
     if (!ctx) return;
 
-    if (window.categoryChart && typeof window.categoryChart.destroy === "function") {
+    if (window.categoryChart &&
+        typeof window.categoryChart.destroy === "function") {
       window.categoryChart.destroy();
     }
 
@@ -87,7 +228,12 @@
       datasets: [{
         label: '支出',
         data: <%= raw @category_totals.values.to_json %>,
-        backgroundColor: ['#FF6384','#36A2EB','#FFCE56']
+        backgroundColor: [
+          '#22C55E',
+          '#3B82F6',
+          '#A855F7',
+          '#6B7280'
+        ]
       }]
     };
 
@@ -101,17 +247,23 @@
     const ctx = document.getElementById('monthlyChart');
     if (!ctx) return;
 
-    if (window.monthlyChart && typeof window.monthlyChart.destroy === "function") {
+    if (window.monthlyChart &&
+        typeof window.monthlyChart.destroy === "function") {
       window.monthlyChart.destroy();
     }
 
     const data = {
-      labels: <%= raw @monthly_totals.keys.map { |d| d.strftime("%Y-%m") }.to_json %>,
+      labels: <%= raw @monthly_totals.keys.map { |d|
+        d.strftime("%Y-%m")
+      }.to_json %>,
+
       datasets: [{
         label: '月別支出',
         data: <%= raw @monthly_totals.values.to_json %>,
-        borderColor: '#36A2EB',
-        fill: false
+        borderColor: '#3B82F6',
+        backgroundColor: '#93C5FD',
+        tension: 0.3,
+        fill: true
       }]
     };
 
