@@ -1,10 +1,89 @@
-<p style="color: green"><%= notice %></p>
+<div class="bg-white rounded-2xl shadow p-6">
 
-<%= render @expense %>
+  <!-- タイトル -->
+  <div class="flex items-start justify-between mb-6">
 
-<div>
-  <%= link_to "Edit this expense", edit_expense_path(@expense) %> |
-  <%= link_to "Back to expenses", expenses_path %>
+    <div>
+      <h1 class="text-3xl font-bold mb-2">
+        <%= @expense.title %>
+      </h1>
 
-  <%= button_to "Destroy this expense", @expense, method: :delete %>
+      <span class="
+        px-3 py-1 rounded-full text-white text-sm
+        <%= case @expense.category
+            when '食費' then 'bg-green-500'
+            when '交通費' then 'bg-blue-500'
+            when '娯楽' then 'bg-purple-500'
+            else 'bg-gray-500'
+            end %>
+      ">
+        <%= @expense.category %>
+      </span>
+    </div>
+
+    <div class="text-right">
+      <p class="text-sm text-gray-500 mb-1">
+        支出金額
+      </p>
+
+      <p class="text-3xl font-bold text-red-500">
+        <%= number_to_currency(
+          @expense.amount,
+          unit: "",
+          delimiter: ","
+        ) %> 円
+      </p>
+    </div>
+
+  </div>
+
+  <!-- 情報 -->
+  <div class="border-t pt-6 space-y-4">
+
+    <div>
+      <p class="text-sm text-gray-500">
+        日付
+      </p>
+
+      <p class="font-semibold text-lg">
+        <%= @expense.date.strftime("%Y年%m月%d日") %>
+      </p>
+    </div>
+
+    <div>
+      <p class="text-sm text-gray-500">
+        登録ID
+      </p>
+
+      <p class="font-semibold">
+        #<%= @expense.id %>
+      </p>
+    </div>
+
+  </div>
+
+  <!-- ボタン -->
+  <div class="flex flex-col sm:flex-row gap-3 mt-8">
+
+    <%= link_to "← 一覧へ戻る",
+      expenses_path,
+      class: "flex-1 text-center bg-gray-200
+              hover:bg-gray-300 py-3 rounded-xl font-semibold" %>
+
+    <%= link_to "編集",
+      edit_expense_path(@expense),
+      class: "flex-1 text-center bg-green-500 text-white
+              hover:bg-green-600 py-3 rounded-xl font-semibold" %>
+
+    <%= link_to "削除",
+      @expense,
+      data: {
+        turbo_method: :delete,
+        turbo_confirm: "削除しますか？"
+      },
+      class: "flex-1 text-center bg-red-500 text-white
+              hover:bg-red-600 py-3 rounded-xl font-semibold" %>
+
+  </div>
+
 </div>

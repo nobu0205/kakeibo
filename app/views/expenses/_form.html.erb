@@ -1,115 +1,173 @@
-<%= form_with(model: expense) do |form| %>
-  <% if expense.errors.any? %>
-    <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
-      <h2 class="font-semibold mb-2">
-        <%= pluralize(expense.errors.count, "error") %> 件のエラーがあります
-      </h2>
-      <ul class="list-disc pl-5">
-        <% expense.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
+<div class="bg-white rounded-2xl shadow p-6">
+
+  <%= form_with(model: expense) do |form| %>
+
+    <% if expense.errors.any? %>
+      <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
+        <h2 class="font-semibold mb-2">
+          <%= pluralize(expense.errors.count, "error") %> 件のエラーがあります
+        </h2>
+
+        <ul class="list-disc pl-5">
+          <% expense.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="space-y-5">
+
+      <!-- タイトル -->
+      <div>
+        <%= form.label :title,
+          "タイトル",
+          class: "block font-medium mb-1 text-gray-700" %>
+
+        <%= form.text_field :title,
+          class: "w-full border rounded-xl p-3 focus:ring-2 focus:ring-blue-300 outline-none" %>
+      </div>
+
+      <!-- カテゴリ -->
+      <div>
+        <%= form.label :category,
+          "カテゴリ",
+          class: "block font-medium mb-1 text-gray-700" %>
+
+        <%= form.select :category,
+          ["食費", "交通費", "娯楽", "その他"],
+          { prompt: "選択してください" },
+          class: "w-full border rounded-xl p-3 focus:ring-2 focus:ring-blue-300 outline-none" %>
+      </div>
+
+      <!-- 金額 -->
+      <div>
+        <%= form.label :amount,
+          "金額",
+          class: "block font-medium mb-1 text-gray-700" %>
+
+        <div class="relative">
+          <%= form.number_field :amount,
+            class: "w-full border rounded-xl p-3 pr-12 focus:ring-2 focus:ring-blue-300 outline-none" %>
+
+          <span class="absolute right-3 top-3 text-gray-500">
+            円
+          </span>
+        </div>
+
+        <!-- クイック入力 -->
+        <div class="flex flex-wrap gap-2 mt-3">
+
+          <% [100,300,500,1000,2000,3000,5000,10000].each do |v| %>
+
+            <button
+              type="button"
+              data-value="<%= v %>"
+              class="quick-btn bg-gray-200 px-3 py-1 rounded-lg
+                    hover:bg-gray-300 active:scale-95 transition">
+
+              <%= v >= 10000 ? "1万円" : "#{v}円" %>
+
+            </button>
+
+          <% end %>
+
+          <button
+            type="button"
+            onclick="document.getElementById('expense_amount').value=''"
+            class="bg-red-200 px-3 py-1 rounded-lg hover:bg-red-300">
+
+            クリア
+
+          </button>
+
+        </div>
+      </div>
+
+      <!-- 日付 -->
+      <div>
+
+        <%= form.label :date,
+          "日付",
+          class: "block font-medium mb-1 text-gray-700" %>
+
+        <%= form.date_field :date,
+          value: expense.date || Date.today,
+          class: "w-full border rounded-xl p-3 focus:ring-2 focus:ring-blue-300 outline-none" %>
+
+        <div class="flex gap-2 mt-3">
+
+          <button
+            type="button"
+            onclick="setToday()"
+            class="bg-gray-200 px-3 py-1 rounded-lg hover:bg-gray-300">
+
+            今日
+
+          </button>
+
+          <button
+            type="button"
+            onclick="setYesterday()"
+            class="bg-gray-200 px-3 py-1 rounded-lg hover:bg-gray-300">
+
+            昨日
+
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- 保存ボタン -->
+      <div>
+        <%= form.submit "保存",
+          class: "w-full bg-green-500 text-white py-3 rounded-xl
+                  hover:bg-green-600 shadow font-semibold" %>
+      </div>
+
     </div>
+
   <% end %>
 
-  <div class="space-y-4">
-
-    <!-- タイトル -->
-    <div>
-      <%= form.label :title, "タイトル", class: "block font-medium mb-1" %>
-      <%= form.text_field :title, class: "w-full border rounded p-2" %>
-    </div>
-
-    <!-- カテゴリ -->
-    <div>
-      <%= form.label :category, "カテゴリ", class: "block font-medium mb-1" %>
-      <%= form.select :category,
-        ["食費", "交通費", "娯楽", "その他"],
-        { prompt: "選択してください" },
-        class: "w-full border rounded p-2" %>
-    </div>
-
-    <!-- 金額 -->
-    <div>
-      <%= form.label :amount, "金額", class: "block font-medium mb-1" %>
-
-      <div class="relative">
-        <%= form.number_field :amount, class: "w-full border rounded p-2 pr-12" %>
-        <span class="absolute right-3 top-2 text-gray-500">円</span>
-      </div>
-
-      <div class="flex flex-wrap gap-2 mt-2">
-        <% [100,300,500,1000,2000,3000,5000,10000].each do |v| %>
-          <button type="button"
-            data-value="<%= v %>"
-            class="quick-btn bg-gray-200 px-3 py-1 rounded hover:bg-gray-300 active:scale-95 transition">
-            <%= v >= 10000 ? "1万円" : "#{v}円" %>
-          </button>
-        <% end %>
-
-        <button type="button"
-          onclick="document.getElementById('expense_amount').value=''"
-          class="bg-red-200 px-3 py-1 rounded">
-          クリア
-        </button>
-      </div>
-    </div>
-
-  <!-- 日付 -->
-<div>
-  <%= form.label :date, "日付", class: "block font-medium mb-1" %>
-  <%= form.date_field :date,
-  value: expense.date || Date.today,
-  class: "w-full border rounded p-2" %>
-
-  <div class="flex gap-2 mt-2">
-    <button type="button"
-      onclick="setToday()"
-      class="bg-gray-200 px-3 py-1 rounded">
-      今日
-    </button>
-
-    <button type="button"
-      onclick="setYesterday()"
-      class="bg-gray-200 px-3 py-1 rounded">
-      昨日
-    </button>
-  </div>
 </div>
 
-    <!-- 送信 -->
-    <div>
-      <%= form.submit "保存",
-        class: "w-full bg-green-500 text-white py-2 rounded hover:bg-green-600" %>
-    </div>
-
-  </div>
-<% end %>
-
-<!-- 👇 scriptは外に出す -->
+<!-- 金額クイック入力 -->
 <script>
   document.addEventListener("click", (e) => {
     if (e.target.classList.contains("quick-btn")) {
+
       const value = parseInt(e.target.dataset.value);
       const input = document.getElementById("expense_amount");
 
       input.value = (parseInt(input.value || 0) + value);
+
       input.focus();
     }
   });
 </script>
 
+<!-- 日付ボタン -->
 <script>
   function setToday() {
     const input = document.getElementById("expense_date");
-    const today = new Date().toISOString().split('T')[0];
+
+    const today = new Date()
+      .toISOString()
+      .split('T')[0];
+
     input.value = today;
   }
 
   function setYesterday() {
     const input = document.getElementById("expense_date");
+
     const d = new Date();
+
     d.setDate(d.getDate() - 1);
-    input.value = d.toISOString().split('T')[0];
+
+    input.value = d
+      .toISOString()
+      .split('T')[0];
   }
 </script>
