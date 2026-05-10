@@ -1,3 +1,4 @@
+require "csv"
 class ExpensesController < ApplicationController
   before_action :set_expense, only: %i[ show edit update destroy ]
 
@@ -14,7 +15,24 @@ class ExpensesController < ApplicationController
     @expenses = Expense.where(
       date: @selected_month.beginning_of_month..
             @selected_month.end_of_month
-    ).order(date: :desc)
+    )
+
+case params[:sort]
+when "latest"
+  @expenses = @expenses.order(date: :desc)
+
+when "old"
+  @expenses = @expenses.order(date: :asc)
+
+when "amount_desc"
+  @expenses = @expenses.order(amount: :desc)
+
+when "amount_asc"
+  @expenses = @expenses.order(amount: :asc)
+
+else
+  @expenses = @expenses.order(date: :desc)
+end
 
     # キーワード検索
     if params[:keyword].present?
@@ -46,6 +64,15 @@ class ExpensesController < ApplicationController
     @month_count = @this_month_expenses.count
 
     @max_expense = @this_month_expenses.maximum(:amount) || 0
+
+   respond_to do |format|
+  format.html
+
+  format.csv do
+    send_data @expenses.to_csv,
+      filename: "expenses-#{Date.today}.csv"
+  end
+end
   end
 
   # GET /expenses/1 or /expenses/1.json

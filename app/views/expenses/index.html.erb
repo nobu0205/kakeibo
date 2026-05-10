@@ -6,7 +6,8 @@
     expenses_path(
       month: @selected_month.prev_month.strftime("%Y-%m"),
       category: params[:category],
-      keyword: params[:keyword]
+      keyword: params[:keyword],
+      sort: params[:sort]
     ),
     class: "bg-white px-3 py-1 rounded shadow hover:bg-gray-100" %>
 
@@ -18,7 +19,8 @@
     expenses_path(
       month: @selected_month.next_month.strftime("%Y-%m"),
       category: params[:category],
-      keyword: params[:keyword]
+      keyword: params[:keyword],
+      sort: params[:sort]
     ),
     class: "bg-white px-3 py-1 rounded shadow hover:bg-gray-100" %>
 
@@ -31,6 +33,7 @@
          name="month"
          value="<%= @selected_month.strftime("%Y-%m") %>">
 
+  <!-- キーワード -->
   <input
     type="text"
     name="keyword"
@@ -39,6 +42,7 @@
     class="border rounded p-2 flex-1"
   />
 
+  <!-- カテゴリ -->
   <select name="category" class="border rounded p-2">
 
     <option value="">すべて</option>
@@ -65,6 +69,36 @@
 
   </select>
 
+ <!-- 並び替え -->
+<select name="sort"
+        class="border rounded p-2"
+        onchange="this.form.submit()">
+
+  <option value="">並び替え</option>
+
+  <option value="latest"
+    <%= "selected" if params[:sort] == "latest" %>>
+    新しい順
+  </option>
+
+  <option value="old"
+    <%= "selected" if params[:sort] == "old" %>>
+    古い順
+  </option>
+
+  <option value="amount_desc"
+    <%= "selected" if params[:sort] == "amount_desc" %>>
+    金額高い順
+  </option>
+
+  <option value="amount_asc"
+    <%= "selected" if params[:sort] == "amount_asc" %>>
+    金額低い順
+  </option>
+
+</select>
+
+  <!-- ボタン -->
   <button type="submit"
           class="bg-gray-800 text-white px-3 py-2 rounded hover:bg-gray-700">
     絞り込み
@@ -179,12 +213,102 @@
 
 </div>
 
+<!-- カテゴリ割合 -->
+<div class="bg-white p-6 rounded-2xl shadow mb-6
+            hover:shadow-xl transition duration-300">
+
+  <h2 class="text-lg font-semibold mb-4">
+    カテゴリ割合
+  </h2>
+
+  <% @category_totals.each do |category, amount| %>
+
+    <% percentage =
+      @total_amount > 0 ?
+      ((amount.to_f / @total_amount) * 100).round : 0
+    %>
+
+    <div class="mb-5">
+
+      <!-- ラベル -->
+      <div class="flex justify-between items-center mb-2">
+
+        <div class="flex items-center gap-2">
+
+          <div class="
+            w-3 h-3 rounded-full
+            <%= case category
+                when '食費' then 'bg-green-500'
+                when '交通費' then 'bg-blue-500'
+                when '娯楽' then 'bg-purple-500'
+                else 'bg-gray-500'
+                end %>
+          "></div>
+
+          <span class="font-medium">
+            <%= category %>
+          </span>
+
+        </div>
+
+        <span class="text-sm text-gray-500">
+
+          <%= percentage %>% ・
+
+          <%= number_to_currency(
+            amount,
+            unit: "",
+            delimiter: ","
+          ) %>円
+
+        </span>
+
+      </div>
+
+      <!-- バー -->
+      <div class="w-full bg-gray-200 rounded-full h-5 overflow-hidden">
+
+        <div
+          class="
+            h-5 rounded-full
+            transition-all duration-700
+            hover:brightness-110
+            <%= case category
+                when '食費' then 'bg-green-500'
+                when '交通費' then 'bg-blue-500'
+                when '娯楽' then 'bg-purple-500'
+                else 'bg-gray-500'
+                end %>
+          "
+          style="width: <%= percentage %>%"
+        ></div>
+
+      </div>
+
+    </div>
+
+  <% end %>
+
+</div>
+
 <!-- 新規追加 -->
 <%= link_to "＋ 支出を追加",
   new_expense_path,
   class: "inline-block bg-blue-500 text-white
           px-4 py-2 rounded shadow
           hover:bg-blue-600 mb-6" %>
+
+<%= link_to "CSVダウンロード",
+    expenses_path(
+      format: :csv,
+      month: params[:month],
+      category: params[:category],
+      keyword: params[:keyword],
+      sort: params[:sort]
+    ),
+    class: "inline-block bg-green-500 text-white
+            px-4 py-2 rounded shadow
+            hover:bg-green-600 mb-6 ml-2" %>
 
 <!-- 一覧 -->
 <% if @expenses.any? %>
