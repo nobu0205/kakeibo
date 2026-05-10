@@ -68,3 +68,5 @@ end
 gem "groupdate"
 
 gem "tailwindcss-rails"
+
+gem "simple_calendar"

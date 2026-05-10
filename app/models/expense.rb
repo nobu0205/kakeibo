@@ -1,4 +1,11 @@
 class Expense < ApplicationRecord
+  validates :title, presence: true
+  validates :amount, presence: true
+
+  def start_time
+    date
+  end
+
   def self.to_csv
     CSV.generate(headers: true) do |csv|
       csv << [
