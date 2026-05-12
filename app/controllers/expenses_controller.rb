@@ -1,8 +1,10 @@
 require "csv"
+
 class ExpensesController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_expense, only: %i[ show edit update destroy ]
 
-  # GET /expenses or /expenses.json
+  # GET /expenses
   def index
     # 月選択
     if params[:month].present?
@@ -11,28 +13,29 @@ class ExpensesController < ApplicationController
       @selected_month = Date.current
     end
 
-    # 対象月のデータ
-    @expenses = Expense.where(
+    # ログインユーザーの支出だけ取得
+    @expenses = current_user.expenses.where(
       date: @selected_month.beginning_of_month..
             @selected_month.end_of_month
     )
 
-case params[:sort]
-when "latest"
-  @expenses = @expenses.order(date: :desc)
+    # 並び替え
+    case params[:sort]
+    when "latest"
+      @expenses = @expenses.order(date: :desc)
 
-when "old"
-  @expenses = @expenses.order(date: :asc)
+    when "old"
+      @expenses = @expenses.order(date: :asc)
 
-when "amount_desc"
-  @expenses = @expenses.order(amount: :desc)
+    when "amount_desc"
+      @expenses = @expenses.order(amount: :desc)
 
-when "amount_asc"
-  @expenses = @expenses.order(amount: :asc)
+    when "amount_asc"
+      @expenses = @expenses.order(amount: :asc)
 
-else
-  @expenses = @expenses.order(date: :desc)
-end
+    else
+      @expenses = @expenses.order(date: :desc)
+    end
 
     # キーワード検索
     if params[:keyword].present?
@@ -65,32 +68,32 @@ end
 
     @max_expense = @this_month_expenses.maximum(:amount) || 0
 
-   respond_to do |format|
-  format.html
+    respond_to do |format|
+      format.html
 
-  format.csv do
-    send_data @expenses.to_csv,
-      filename: "expenses-#{Date.today}.csv"
-  end
-end
+      format.csv do
+        send_data @expenses.to_csv,
+          filename: "expenses-#{Date.today}.csv"
+      end
+    end
   end
 
-  # GET /expenses/1 or /expenses/1.json
+  # GET /expenses/1
   def show
   end
 
   # GET /expenses/new
   def new
-    @expense = Expense.new
+    @expense = current_user.expenses.new
   end
 
   # GET /expenses/1/edit
   def edit
   end
 
-  # POST /expenses or /expenses.json
+  # POST /expenses
   def create
-    @expense = Expense.new(expense_params)
+    @expense = current_user.expenses.new(expense_params)
 
     respond_to do |format|
       if @expense.save
@@ -98,15 +101,27 @@ end
           redirect_to @expense,
           notice: "支出を登録しました。"
         }
-        format.json { render :show, status: :created, location: @expense }
+
+        format.json {
+          render :show,
+          status: :created,
+          location: @expense
+        }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @expense.errors, status: :unprocessable_entity }
+        format.html {
+          render :new,
+          status: :unprocessable_entity
+        }
+
+        format.json {
+          render json: @expense.errors,
+          status: :unprocessable_entity
+        }
       end
     end
   end
 
-  # PATCH/PUT /expenses/1 or /expenses/1.json
+  # PATCH/PUT /expenses/1
   def update
     respond_to do |format|
       if @expense.update(expense_params)
@@ -115,15 +130,27 @@ end
           notice: "支出を更新しました。",
           status: :see_other
         }
-        format.json { render :show, status: :ok, location: @expense }
+
+        format.json {
+          render :show,
+          status: :ok,
+          location: @expense
+        }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @expense.errors, status: :unprocessable_entity }
+        format.html {
+          render :edit,
+          status: :unprocessable_entity
+        }
+
+        format.json {
+          render json: @expense.errors,
+          status: :unprocessable_entity
+        }
       end
     end
   end
 
-  # DELETE /expenses/1 or /expenses/1.json
+  # DELETE /expenses/1
   def destroy
     @expense.destroy!
 
@@ -133,18 +160,19 @@ end
         notice: "支出を削除しました。",
         status: :see_other
       }
+
       format.json { head :no_content }
     end
   end
 
   private
 
-  # Use callbacks to share common setup or constraints between actions.
+  # 他人のデータを触れないようにする
   def set_expense
-    @expense = Expense.find(params[:id])
+    @expense = current_user.expenses.find(params[:id])
   end
 
-  # Only allow a list of trusted parameters through.
+  # Strong Parameters
   def expense_params
     params.require(:expense).permit(
       :title,
