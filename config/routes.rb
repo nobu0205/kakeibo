@@ -8,8 +8,13 @@ Rails.application.routes.draw do
       to: "users/sessions#guest"
   end
 
+  authenticated :user do
+    root "expenses#index", as: :authenticated_root
+  end
+
+  root "home#index"
+
   resources :expenses
-  root "expenses#index"
 
   get "up" => "rails/health#show",
       as: :rails_health_check
