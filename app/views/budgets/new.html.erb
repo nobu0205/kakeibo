@@ -1,0 +1,30 @@
+<h1 class="text-3xl font-bold mb-6">
+  予算設定
+</h1>
+
+<div class="bg-white rounded-xl shadow p-6 max-w-lg mx-auto">
+
+  <%= form_with model: @budget do |f| %>
+
+    <div class="mb-4">
+      <%= f.label :month, "対象月",
+          class: "block mb-2 font-medium" %>
+
+      <%= f.month_field :month,
+          class: "w-full border rounded p-2" %>
+    </div>
+
+    <div class="mb-6">
+      <%= f.label :amount, "予算額",
+          class: "block mb-2 font-medium" %>
+
+      <%= f.number_field :amount,
+          class: "w-full border rounded p-2" %>
+    </div>
+
+    <%= f.submit "保存",
+        class: "bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition" %>
+
+  <% end %>
+
+</div>

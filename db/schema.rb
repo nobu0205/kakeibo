@@ -10,7 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_11_124707) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_15_112808) do
+  create_table "budgets", force: :cascade do |t|
+    t.integer "amount"
+    t.datetime "created_at", null: false
+    t.date "month"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id"], name: "index_budgets_on_user_id"
+  end
+
   create_table "expenses", force: :cascade do |t|
     t.integer "amount"
     t.string "category"
@@ -34,5 +43,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_11_124707) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "budgets", "users"
   add_foreign_key "expenses", "users"
 end
