@@ -192,6 +192,39 @@
 
 <% end %>
 
+<div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500
+            rounded-2xl shadow-lg p-6 mb-6
+            hover:shadow-2xl transition duration-300">
+
+  <div class="flex items-center justify-between mb-4">
+
+    <h2 class="text-lg font-bold flex items-center gap-2 text-gray-900">
+      🤖 AI支出分析
+    </h2>
+
+    <span class="text-sm bg-white px-3 py-1 rounded-full text-indigo-700 font-medium">
+      Smart Insight
+    </span>
+
+  </div>
+
+  <div class="space-y-3">
+
+    <% @analysis_messages.each do |message| %>
+
+      <div class="bg-white p-3 rounded-xl text-gray-800 shadow">
+
+        <%= message %>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
+</div>
+
+
 <!-- 統計カード -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 

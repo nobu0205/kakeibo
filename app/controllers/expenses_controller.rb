@@ -68,6 +68,36 @@ class ExpensesController < ApplicationController
 
     @max_expense = @this_month_expenses.maximum(:amount) || 0
 
+    @analysis_messages = []
+
+budget = current_user.budgets.find_by(
+  month: @selected_month.beginning_of_month
+)
+
+if budget && @month_total > budget.amount
+  @analysis_messages << "⚠️ 予算を超過しています"
+elsif budget && @month_total > budget.amount * 0.8
+  @analysis_messages << "⚠️ 予算の80%以上を使用しています"
+end
+
+if @month_total > 0
+  food_ratio = (
+    @category_totals["食費"].to_i.to_f / @month_total
+  )
+
+  if food_ratio > 0.4
+    @analysis_messages << "🍽 食費の割合が高めです"
+  end
+end
+
+if @max_expense > 5000
+  @analysis_messages << "💸 高額支出があります"
+end
+
+if @analysis_messages.empty?
+  @analysis_messages << "✅ バランスよく支出管理できています"
+end
+
     respond_to do |format|
       format.html
 
