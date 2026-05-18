@@ -68,6 +68,21 @@ class ExpensesController < ApplicationController
 
     @max_expense = @this_month_expenses.maximum(:amount) || 0
 
+    @previous_month = @selected_month.prev_month
+
+@previous_total = current_user.expenses.where(
+  date: @previous_month.beginning_of_month..
+        @previous_month.end_of_month
+).sum(:amount)
+
+if @previous_total > 0
+  @comparison_rate = (
+    ((@month_total - @previous_total).to_f / @previous_total) * 100
+  ).round
+else
+  @comparison_rate = 0
+end
+
     @analysis_messages = []
 
 budget = current_user.budgets.find_by(
@@ -92,6 +107,14 @@ end
 
 if @max_expense > 5000
   @analysis_messages << "💸 高額支出があります"
+end
+
+if @previous_total > 0
+  if @comparison_rate > 20
+    @analysis_messages << "📈 前月より#{@comparison_rate}%支出が増加しています"
+  elsif @comparison_rate < -10
+    @analysis_messages << "📉 前月より#{@comparison_rate.abs}%節約できています"
+  end
 end
 
 if @analysis_messages.empty?

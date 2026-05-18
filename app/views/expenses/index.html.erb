@@ -10,7 +10,7 @@
       keyword: params[:keyword],
       sort: params[:sort]
     ),
-    class: "bg-white px-3 py-1 rounded shadow hover:bg-gray-100 transition" %>
+    class: "bg-white dark:bg-gray-800 px-3 py-1 rounded shadow hover:bg-gray-100 transition" %>
 
   <h2 class="text-xl font-bold">
     <%= @selected_month.strftime("%Y年%m月") %>
@@ -23,13 +23,13 @@
       keyword: params[:keyword],
       sort: params[:sort]
     ),
-    class: "bg-white px-3 py-1 rounded shadow hover:bg-gray-100 transition" %>
+    class: "bg-white dark:bg-gray-800 px-3 py-1 rounded shadow hover:bg-gray-100 transition" %>
 
 </div>
 
 <!-- 検索 -->
 <form method="get"
-      class="mb-6 flex flex-col md:flex-row gap-2 bg-white p-4 rounded-xl shadow">
+      class="mb-6 flex flex-col md:flex-row gap-2 bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
 
   <input type="hidden"
          name="month"
@@ -129,7 +129,7 @@
        (@month_total.to_f / budget.amount) * 100
      ).round %>
 
-  <div class="bg-white rounded-2xl shadow p-6 mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 mb-6">
 
     <div class="flex justify-between items-center mb-2">
 
@@ -224,6 +224,50 @@
 
 </div>
 
+<!-- 前月比較 -->
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 mb-6
+            hover:shadow-xl transition duration-300">
+
+  <h2 class="text-lg font-semibold mb-4">
+    前月比較
+  </h2>
+
+  <div class="flex items-center justify-between">
+
+    <div>
+      <p class="text-gray-500 text-sm">
+        前月支出
+      </p>
+
+      <p class="text-xl font-bold">
+        <%= number_to_currency(
+          @previous_total,
+          unit: "",
+          delimiter: ","
+        ) %> 円
+      </p>
+    </div>
+
+    <div class="text-right">
+      <p class="text-gray-500 text-sm">
+        増減率
+      </p>
+
+      <p class="
+        text-2xl font-bold
+        <%= @comparison_rate > 0 ?
+            'text-red-500' :
+            'text-green-500' %>
+      ">
+        <%= @comparison_rate > 0 ? "↑" : "↓" %>
+        <%= @comparison_rate.abs %>%
+      </p>
+    </div>
+
+  </div>
+
+</div>
+
 
 <!-- 統計カード -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -250,7 +294,7 @@
   </div>
 
   <!-- 件数 -->
-  <div class="bg-white rounded-xl shadow p-4
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4
               hover:shadow-xl hover:-translate-y-1
               transition duration-300">
 
@@ -265,7 +309,7 @@
   </div>
 
   <!-- 最大支出 -->
-  <div class="bg-white rounded-xl shadow p-4
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4
               hover:shadow-xl hover:-translate-y-1
               transition duration-300">
 
@@ -288,7 +332,7 @@
 </div>
 
 <!-- カレンダー -->
-<div class="bg-white p-6 rounded-2xl shadow mb-6
+<div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow mb-6
             hover:shadow-xl transition duration-300">
 
   <h2 class="text-lg font-semibold mb-4">
@@ -369,7 +413,7 @@
 <div class="grid md:grid-cols-2 gap-6 mb-6">
 
   <!-- カテゴリ -->
-  <div class="bg-white p-4 rounded-xl shadow
+  <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow
               hover:shadow-xl hover:-translate-y-1
               transition duration-300">
 
@@ -384,7 +428,7 @@
   </div>
 
   <!-- 月別 -->
-  <div class="bg-white p-4 rounded-xl shadow
+  <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow
               hover:shadow-xl hover:-translate-y-1
               transition duration-300">
 
@@ -401,7 +445,7 @@
 </div>
 
 <!-- カテゴリ割合 -->
-<div class="bg-white p-6 rounded-2xl shadow mb-6
+<div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow mb-6
             hover:shadow-xl transition duration-300">
 
   <h2 class="text-lg font-semibold mb-4">
@@ -516,7 +560,7 @@
 
     <% @expenses.each do |expense| %>
 
-      <div class="bg-white p-4 rounded-xl shadow
+      <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow
                   hover:shadow-xl hover:-translate-y-1
                   transition duration-300
                   flex flex-col sm:flex-row
@@ -603,7 +647,7 @@
 <% else %>
 
   <!-- 空状態 -->
-  <div class="bg-white rounded-xl shadow p-10 text-center">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-10 text-center">
 
     <p class="text-5xl mb-4">
       💰
