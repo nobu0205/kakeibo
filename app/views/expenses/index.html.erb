@@ -346,7 +346,7 @@
     <div class="h-[140px] p-1 overflow-y-auto">
 
       <!-- 日付 -->
-      <div class="text-sm font-bold mb-2">
+      <div class="text-sm font-bold mb-2 text-gray-900 dark:text-white">
         <%= date.day %>
       </div>
 
@@ -391,7 +391,7 @@
       <!-- 日別合計 -->
       <% if expenses.any? %>
 
-        <div class="text-xs text-gray-500 mt-2">
+        <div class="text-xs text-gray-500 dark:text-gray-300 mt-2">
 
           合計:
 
@@ -673,11 +673,14 @@
 <% end %>
 
 <script>
+  function isDarkMode() {
+    return document.documentElement.classList.contains("dark");
+  }
+
   function drawChart() {
     const ctx = document.getElementById('categoryChart');
     if (!ctx) return;
 
-    // 既存グラフ削除
     if (
       window.categoryChart &&
       typeof window.categoryChart.destroy === "function"
@@ -685,30 +688,35 @@
       window.categoryChart.destroy();
     }
 
-    const data = {
-      labels: <%= raw @category_totals.keys.to_json %>,
-      datasets: [{
-        label: '支出',
-        data: <%= raw @category_totals.values.to_json %>,
-        backgroundColor: [
-          '#22C55E',
-          '#3B82F6',
-          '#A855F7',
-          '#6B7280'
-        ]
-      }]
-    };
+    const textColor = isDarkMode() ? "#fff" : "#000";
 
-    // 円グラフ
     window.categoryChart = new Chart(ctx, {
       type: 'pie',
-      data: data,
+
+      data: {
+        labels: <%= raw @category_totals.keys.to_json %>,
+        datasets: [{
+          label: '支出',
+          data: <%= raw @category_totals.values.to_json %>,
+          backgroundColor: [
+            '#22C55E',
+            '#3B82F6',
+            '#A855F7',
+            '#6B7280'
+          ]
+        }]
+      },
+
       options: {
         responsive: true,
         maintainAspectRatio: false,
+
         plugins: {
           legend: {
-            position: 'bottom'
+            position: 'bottom',
+            labels: {
+              color: textColor
+            }
           }
         }
       }
@@ -719,7 +727,6 @@
     const ctx = document.getElementById('monthlyChart');
     if (!ctx) return;
 
-    // 既存グラフ削除
     if (
       window.monthlyChart &&
       typeof window.monthlyChart.destroy === "function"
@@ -727,39 +734,83 @@
       window.monthlyChart.destroy();
     }
 
-    const data = {
-      labels: <%= raw @monthly_totals.keys.map { |d|
-        d.strftime("%Y-%m")
-      }.to_json %>,
+    const textColor = isDarkMode() ? "#fff" : "#000";
 
-      datasets: [{
-        label: '月別支出',
-        data: <%= raw @monthly_totals.values.to_json %>,
-        borderColor: '#3B82F6',
-        backgroundColor: '#93C5FD',
-        tension: 0.3,
-        fill: true
-      }]
-    };
-
-    // 折れ線グラフ
     window.monthlyChart = new Chart(ctx, {
       type: 'line',
-      data: data,
+
+      data: {
+        labels: <%= raw @monthly_totals.keys.map { |d|
+          d.strftime("%Y-%m")
+        }.to_json %>,
+
+        datasets: [{
+          label: '月別支出',
+          data: <%= raw @monthly_totals.values.to_json %>,
+          borderColor: '#3B82F6',
+          backgroundColor: '#93C5FD',
+          tension: 0.3,
+          fill: true
+        }]
+      },
+
       options: {
         responsive: true,
         maintainAspectRatio: false,
+
         plugins: {
           legend: {
-            position: 'bottom'
+            position: 'bottom',
+            labels: {
+              color: textColor
+            }
+          }
+        },
+
+        scales: {
+          x: {
+            ticks: {
+              color: textColor
+            },
+            grid: {
+              color: isDarkMode()
+                ? "rgba(255,255,255,0.1)"
+                : "rgba(0,0,0,0.1)"
+            }
+          },
+
+          y: {
+            ticks: {
+              color: textColor
+            },
+            grid: {
+              color: isDarkMode()
+                ? "rgba(255,255,255,0.1)"
+                : "rgba(0,0,0,0.1)"
+            }
           }
         }
       }
     });
   }
 
-  document.addEventListener("turbo:load", () => {
-    drawChart();
-    drawMonthlyChart();
-  });
+  function renderCharts() {
+  drawChart();
+  drawMonthlyChart();
+}
+
+document.addEventListener("turbo:load", () => {
+  renderCharts();
+
+  if (!window.themeObserver) {
+    window.themeObserver = new MutationObserver(() => {
+      renderCharts();
+    });
+
+    window.themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  }
+});
 </script>
