@@ -1,5 +1,6 @@
 .simple-calendar {
   width: 100%;
+  color: inherit;
 }
 
 .simple-calendar table {
@@ -9,10 +10,11 @@
 }
 
 .simple-calendar th {
-  background: #f3f4f6;
+  background: rgb(243 244 246);
   padding: 10px;
   border: 1px solid #e5e7eb;
   text-align: center;
+  color: inherit;
 }
 
 .simple-calendar td {
@@ -20,8 +22,56 @@
   vertical-align: top;
   height: 140px;
   padding: 4px;
+  color: inherit;
+  background: white;
 }
 
 .simple-calendar .today {
-  background: #eff6ff;
+  background: rgb(239 246 255);
+}
+
+/* ダークモード */
+.dark .simple-calendar {
+  color: white;
+}
+
+.dark .simple-calendar th {
+  background: #1f2937;
+  color: white;
+  border-color: #374151;
+}
+
+.dark .simple-calendar td {
+  background: #111827 !important;
+  color: white !important;
+  border-color: #374151;
+}
+
+.dark .simple-calendar .today {
+  background: #1e3a8a !important;
+}
+
+.dark .simple-calendar a {
+  color: white !important;
+  text-decoration: none;
+}
+
+.dark .simple-calendar .day {
+  color: white !important;
+}
+
+.dark .simple-calendar .wday-0,
+.dark .simple-calendar .wday-1,
+.dark .simple-calendar .wday-2,
+.dark .simple-calendar .wday-3,
+.dark .simple-calendar .wday-4,
+.dark .simple-calendar .wday-5,
+.dark .simple-calendar .wday-6 {
+  background: #111827 !important;
+}
+
+.dark .simple-calendar .prev-month,
+.dark .simple-calendar .next-month {
+  background: #0f172a !important;
+  opacity: 0.7;
 }

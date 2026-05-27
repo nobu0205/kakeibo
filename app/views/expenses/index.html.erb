@@ -337,7 +337,7 @@
 <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow mb-6
             hover:shadow-xl transition duration-300">
 
-  <h2 class="text-lg font-semibold mb-4">
+  <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
     カレンダー
   </h2>
 
@@ -354,7 +354,7 @@
       <% expenses.each do |expense| %>
 
         <%= link_to expense_path(expense),
-    class: "block no-underline" do %>
+          class: "block no-underline text-white" do %>
 
           <div class="
             text-xs rounded-lg p-2 mb-1 text-white shadow-sm
@@ -368,11 +368,11 @@
                 end %>
           ">
 
-            <div class="font-semibold truncate">
+            <div class="font-semibold truncate text-white">
               <%= expense.title %>
             </div>
 
-            <div class="text-[10px] opacity-90">
+            <div class="text-[10px] opacity-90 text-white">
 
               <%= number_to_currency(
                 expense.amount,
@@ -423,7 +423,7 @@
       カテゴリ別
     </h2>
 
-    <div class="h-72">
+    <div class="h-72" id="categoryChartWrapper">
   <canvas id="categoryChart"></canvas>
 </div>
 
@@ -438,7 +438,7 @@
       月別支出
     </h2>
 
-    <div class="h-72">
+    <div class="h-72" id="monthlyChartWrapper">
   <canvas id="monthlyChart"></canvas>
 </div>
 
@@ -673,37 +673,60 @@
 <% end %>
 
 <script>
-  function isDarkMode() {
-    return document.documentElement.classList.contains("dark");
-  }
+  function renderCharts() {
+    // Chart.js が未読込なら待つ
+    if (typeof Chart === "undefined") {
+      console.log("Chart.js is not loaded");
+      return;
+    }
 
-  function drawChart() {
-    const ctx = document.getElementById('categoryChart');
-    if (!ctx) return;
+    const categoryCanvas = document.getElementById("categoryChart");
+    const monthlyCanvas = document.getElementById("monthlyChart");
 
-    if (
-      window.categoryChart &&
-      typeof window.categoryChart.destroy === "function"
-    ) {
+    // canvasが無いなら終了
+    if (!categoryCanvas || !monthlyCanvas) {
+      console.log("Canvas not found");
+      return;
+    }
+
+    // 既存グラフ削除
+    if (window.categoryChart instanceof Chart) {
       window.categoryChart.destroy();
     }
 
-    const textColor = isDarkMode() ? "#fff" : "#000";
+    if (window.monthlyChart instanceof Chart) {
+      window.monthlyChart.destroy();
+    }
 
-    window.categoryChart = new Chart(ctx, {
-      type: 'pie',
+    const isDark =
+      document.documentElement.classList.contains("dark");
+
+    const textColor = isDark ? "#ffffff" : "#000000";
+
+    const gridColor = isDark
+      ? "rgba(255,255,255,0.1)"
+      : "rgba(0,0,0,0.1)";
+
+    // =========================
+    // カテゴリ別 円グラフ
+    // =========================
+    window.categoryChart = new Chart(categoryCanvas, {
+      type: "pie",
 
       data: {
         labels: <%= raw @category_totals.keys.to_json %>,
+
         datasets: [{
-          label: '支出',
           data: <%= raw @category_totals.values.to_json %>,
+
           backgroundColor: [
-            '#22C55E',
-            '#3B82F6',
-            '#A855F7',
-            '#6B7280'
-          ]
+            "#22C55E",
+            "#3B82F6",
+            "#A855F7",
+            "#6B7280"
+          ],
+
+          borderWidth: 1
         }]
       },
 
@@ -713,31 +736,22 @@
 
         plugins: {
           legend: {
-            position: 'bottom',
+            position: "bottom",
+
             labels: {
-              color: textColor
+              color: textColor,
+              padding: 20
             }
           }
         }
       }
     });
-  }
 
-  function drawMonthlyChart() {
-    const ctx = document.getElementById('monthlyChart');
-    if (!ctx) return;
-
-    if (
-      window.monthlyChart &&
-      typeof window.monthlyChart.destroy === "function"
-    ) {
-      window.monthlyChart.destroy();
-    }
-
-    const textColor = isDarkMode() ? "#fff" : "#000";
-
-    window.monthlyChart = new Chart(ctx, {
-      type: 'line',
+    // =========================
+    // 月別 折れ線グラフ
+    // =========================
+    window.monthlyChart = new Chart(monthlyCanvas, {
+      type: "line",
 
       data: {
         labels: <%= raw @monthly_totals.keys.map { |d|
@@ -745,12 +759,21 @@
         }.to_json %>,
 
         datasets: [{
-          label: '月別支出',
+          label: "月別支出",
+
           data: <%= raw @monthly_totals.values.to_json %>,
-          borderColor: '#3B82F6',
-          backgroundColor: '#93C5FD',
+
+          borderColor: "#3B82F6",
+
+          backgroundColor: "rgba(59,130,246,0.2)",
+
+          fill: true,
+
           tension: 0.3,
-          fill: true
+
+          pointRadius: 4,
+
+          pointBackgroundColor: "#3B82F6"
         }]
       },
 
@@ -760,7 +783,8 @@
 
         plugins: {
           legend: {
-            position: 'bottom',
+            position: "bottom",
+
             labels: {
               color: textColor
             }
@@ -772,21 +796,21 @@
             ticks: {
               color: textColor
             },
+
             grid: {
-              color: isDarkMode()
-                ? "rgba(255,255,255,0.1)"
-                : "rgba(0,0,0,0.1)"
+              color: gridColor
             }
           },
 
           y: {
+            beginAtZero: true,
+
             ticks: {
               color: textColor
             },
+
             grid: {
-              color: isDarkMode()
-                ? "rgba(255,255,255,0.1)"
-                : "rgba(0,0,0,0.1)"
+              color: gridColor
             }
           }
         }
@@ -794,23 +818,20 @@
     });
   }
 
-  function renderCharts() {
-  drawChart();
-  drawMonthlyChart();
-}
-
-document.addEventListener("turbo:load", () => {
-  renderCharts();
-
-  if (!window.themeObserver) {
-    window.themeObserver = new MutationObserver(() => {
+  // Turbo対応
+  document.addEventListener("turbo:load", () => {
+    setTimeout(() => {
       renderCharts();
-    });
+    }, 100);
+  });
 
-    window.themeObserver.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-  }
-});
+  // ダークモード切替時再描画
+  document.addEventListener("click", (e) => {
+    if (e.target.id === "theme-toggle") {
+      setTimeout(() => {
+        renderCharts();
+      }, 100);
+    }
+  });
 </script>
+
