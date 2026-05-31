@@ -703,6 +703,8 @@
 
     const textColor = isDark ? "#ffffff" : "#000000";
 
+    console.log(Chart.registry.plugins.items)
+
     const gridColor = isDark
       ? "rgba(255,255,255,0.1)"
       : "rgba(0,0,0,0.1)";
@@ -825,13 +827,13 @@
     }, 100);
   });
 
-  // ダークモード切替時再描画
-  document.addEventListener("click", (e) => {
-    if (e.target.id === "theme-toggle") {
-      setTimeout(() => {
-        renderCharts();
-      }, 100);
-    }
-  });
+  const observer = new MutationObserver(() => {
+  renderCharts();
+});
+
+observer.observe(document.documentElement, {
+  attributes: true,
+  attributeFilter: ["class"]
+});
 </script>
 

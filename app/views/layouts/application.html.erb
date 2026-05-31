@@ -91,30 +91,33 @@
     </div>
 
     <script>
-  document.addEventListener("turbo:load", () => {
-    const html = document.documentElement;
-    const button = document.getElementById("theme-toggle");
+document.addEventListener("turbo:load", () => {
+  const html = document.documentElement;
+  const button = document.getElementById("theme-toggle");
 
-    if (localStorage.theme === "dark") {
-      html.classList.add("dark");
-      if (button) button.textContent = "☀️";
-    }
+  if (localStorage.theme === "dark") {
+    html.classList.add("dark");
+    if (button) button.textContent = "☀️";
+  }
 
-    if (button) {
-      button.addEventListener("click", () => {
-        html.classList.toggle("dark");
+  if (button) {
+    button.addEventListener("click", () => {
+      html.classList.toggle("dark");
 
-        if (html.classList.contains("dark")) {
-          localStorage.theme = "dark";
-          button.textContent = "☀️";
-        } else {
-          localStorage.theme = "light";
-          button.textContent = "🌙";
+      if (html.classList.contains("dark")) {
+        localStorage.theme = "dark";
+        button.textContent = "☀️";
+      } else {
+        localStorage.theme = "light";
+        button.textContent = "🌙";
+      }
+
+      setTimeout(() => {
+        if (typeof renderCharts === "function") {
+          renderCharts();
         }
-      });
-    }
-  });
+      }, 50);
+    });
+  }
+});
 </script>
-
-  </body>
-</html>
