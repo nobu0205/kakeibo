@@ -6,33 +6,32 @@ class ExpensesController < ApplicationController
 
   def index
     # 月選択
-    if params[:month].present?
-      @selected_month = Date.parse("#{params[:month]}-01")
-    else
-      @selected_month = Date.current
-    end
+    @selected_month =
+      if params[:month].present?
+        Date.parse("#{params[:month]}-01")
+      else
+        Date.current
+      end
 
     month_range = @selected_month.beginning_of_month..@selected_month.end_of_month
 
     # ベースクエリ（この月のユーザー支出）
     base_scope = current_user.expenses.where(date: month_range)
 
-    # 一覧用
-    @expenses = base_scope
-
-    # 並び替え
-    case params[:sort]
-    when "latest"
-      @expenses = @expenses.order(date: :desc)
-    when "old"
-      @expenses = @expenses.order(date: :asc)
-    when "amount_desc"
-      @expenses = @expenses.order(amount: :desc)
-    when "amount_asc"
-      @expenses = @expenses.order(amount: :asc)
-    else
-      @expenses = @expenses.order(date: :desc)
-    end
+    # 一覧用（ここで初めて order）
+    @expenses =
+      case params[:sort]
+      when "latest"
+        base_scope.order(date: :desc)
+      when "old"
+        base_scope.order(date: :asc)
+      when "amount_desc"
+        base_scope.order(amount: :desc)
+      when "amount_asc"
+        base_scope.order(amount: :asc)
+      else
+        base_scope.order(date: :desc)
+      end
 
     # キーワード検索
     if params[:keyword].present?
@@ -47,17 +46,18 @@ class ExpensesController < ApplicationController
     # 合計
     @total_amount = @expenses.sum(:amount)
 
-    # カテゴリ別（Postgres安全）
-    @category_totals = @expenses.group(:category).sum(:amount)
+    # ⭐重要：group + order 衝突回避
+    @category_totals =
+      @expenses.reorder(nil).group(:category).sum(:amount)
 
-    # 月別（Groupdateは別クエリで安全に）
-    @monthly_totals = current_user.expenses
-      .group_by_month(:date)
-      .sum(:amount)
+    # 月別（安全に別クエリ）
+    @monthly_totals =
+      current_user.expenses
+        .group("DATE_TRUNC('month', date)")
+        .sum(:amount)
 
     # 今月データ
     @this_month_expenses = @expenses
-
     @month_total = @this_month_expenses.sum(:amount)
     @month_count = @this_month_expenses.count
     @max_expense = @this_month_expenses.maximum(:amount) || 0
@@ -66,22 +66,21 @@ class ExpensesController < ApplicationController
     previous_month = @selected_month.prev_month
     previous_range = previous_month.beginning_of_month..previous_month.end_of_month
 
-    @previous_total = current_user.expenses.where(date: previous_range).sum(:amount)
+    @previous_total =
+      current_user.expenses.where(date: previous_range).sum(:amount)
 
-    if @previous_total > 0
-      @comparison_rate = (
-        ((@month_total - @previous_total).to_f / @previous_total) * 100
-      ).round
-    else
-      @comparison_rate = 0
-    end
+    @comparison_rate =
+      if @previous_total > 0
+        (((@month_total - @previous_total).to_f / @previous_total) * 100).round
+      else
+        0
+      end
 
-    # 予算分析
+    # 分析
     @analysis_messages = []
 
-    budget = current_user.budgets.find_by(
-      month: @selected_month.beginning_of_month
-    )
+    budget =
+      current_user.budgets.find_by(month: @selected_month.beginning_of_month)
 
     if budget && @month_total > budget.amount
       @analysis_messages << "⚠️ 予算を超過しています"
@@ -89,9 +88,8 @@ class ExpensesController < ApplicationController
       @analysis_messages << "⚠️ 予算の80%以上を使用しています"
     end
 
-    # 食費比率
     if @month_total > 0
-      food_ratio = @category_totals["食費"].to_i.to_f / @month_total
+      food_ratio = @category_totals["食費"].to_f / @month_total
       @analysis_messages << "🍽 食費の割合が高めです" if food_ratio > 0.4
     end
 
@@ -111,10 +109,9 @@ class ExpensesController < ApplicationController
 
     respond_to do |format|
       format.html
-
       format.csv do
         send_data @expenses.to_csv,
-          filename: "expenses-#{Date.today}.csv"
+                  filename: "expenses-#{Date.today}.csv"
       end
     end
   end
