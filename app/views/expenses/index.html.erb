@@ -230,9 +230,9 @@
 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 mb-6
             hover:shadow-xl transition duration-300">
 
-  <h2 class="text-lg font-semibold mb-4">
-    前月比較
-  </h2>
+  <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+  前月比較
+</h2>
 
   <div class="flex items-center justify-between">
 
@@ -241,13 +241,13 @@
         前月支出
       </p>
 
-      <p class="text-xl font-bold">
-        <%= number_to_currency(
-          @previous_total,
-          unit: "",
-          delimiter: ","
-        ) %> 円
-      </p>
+      <p class="text-xl font-bold text-gray-900 dark:text-white">
+  <%= number_to_currency(
+    @previous_total,
+    unit: "",
+    delimiter: ","
+  ) %> 円
+</p>
     </div>
 
     <div class="text-right">
